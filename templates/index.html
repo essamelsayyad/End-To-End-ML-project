@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FWI Prediction - Fire Weather Index Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            color: white;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .tagline {
+            font-size: 1.5em;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section {
+            margin: 60px 0;
+        }
+
+        .section h2 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .problem-box,
+        .solution-box,
+        .feature-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .problem-box:hover,
+        .solution-box:hover,
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .problem-box h3,
+        .solution-box h3,
+        .feature-box h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .feature-item h4 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .model-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .model-info h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .model-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .spec {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .spec-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .spec-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .section h2 {
+                font-size: 1.8em;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <span>🔥 Fire Weather Index Prediction System</span>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Welcome to FWI Prediction</h1>
+            <p class="tagline">Advanced Machine Learning for Fire Risk Assessment</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Problem Section -->
+        <div class="section">
+            <h2>🚨 The Problem</h2>
+            <div class="problem-box">
+                <h3>Wildfire Risk Prediction Challenge</h3>
+                <p>
+                    Wildfires pose a significant threat to forests, communities, and ecosystems worldwide. Traditional methods of predicting fire risk are often inadequate, relying on manual assessments and outdated data.
+                </p>
+                <p style="margin-top: 15px;">
+                    <strong>Key Challenges:</strong>
+                </p>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li>💨 Complex interactions between weather variables and fire behavior</li>
+                    <li>🌡️ Difficulty predicting fire intensity from meteorological data</li>
+                    <li>⏰ Need for real-time, accurate predictions to prevent catastrophic fires</li>
+                    <li>📊 Lack of scalable, data-driven solutions for fire risk assessment</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Solution Section -->
+        <div class="section">
+            <h2>💡 Our Solution</h2>
+            <div class="solution-box">
+                <h3>Machine Learning-Powered Prediction</h3>
+                <p>
+                    Our FWI (Fire Weather Index) prediction model leverages advanced machine learning algorithms to accurately forecast fire risk based on meteorological and fuel conditions.
+                </p>
+                <p style="margin-top: 15px;">
+                    <strong>How It Works:</strong>
+                </p>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li>📈 Analyzes weather data (temperature, humidity, wind speed, rainfall)</li>
+                    <li>🔥 Evaluates fuel conditions (FFMC, DMC, ISI indices)</li>
+                    <li>🎯 Predicts fire intensity using Lasso Regression algorithm</li>
+                    <li>⚡ Provides real-time risk assessments for different regions</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Model Information -->
+        <div class="model-info">
+            <h3>📊 Model Specifications</h3>
+            <div class="model-specs">
+                <div class="spec">
+                    <div class="spec-label">Algorithm</div>
+                    <div class="spec-value">Lasso Regression</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Input Parameters</div>
+                    <div class="spec-value">7 Weather & Fuel Variables</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Output</div>
+                    <div class="spec-value">Fire Weather Index</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-label">Accuracy</div>
+                    <div class="spec-value">High Precision</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="section">
+            <h2>✨ Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Accurate Predictions</h4>
+                    <p>Precise FWI calculations based on comprehensive weather and fuel data</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Real-Time Analysis</h4>
+                    <p>Instant predictions to support emergency response and fire prevention</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌍</div>
+                    <h4>Regional Assessment</h4>
+                    <p>Location-specific predictions accounting for regional characteristics</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h4>User-Friendly Interface</h4>
+                    <p>Easy-to-use web application for firefighters and decision-makers</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔬</div>
+                    <h4>Data-Driven</h4>
+                    <p>Built on machine learning for consistent, reliable results</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📈</div>
+                    <h4>Scalable Solution</h4>
+                    <p>Deployable across multiple regions and weather stations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Variables Section -->
+        <div class="section">
+            <h2>📋 Input Variables</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h4>🌡️ Temperature</h4>
+                    <p>Air temperature (°C) - affects fuel moisture and combustion rate</p>
+                </div>
+                <div class="feature-item">
+                    <h4>💧 Relative Humidity</h4>
+                    <p>Humidity (%) - inverse relationship with fire risk</p>
+                </div>
+                <div class="feature-item">
+                    <h4>💨 Wind Speed</h4>
+                    <p>Wind speed (km/h) - critical factor in fire spread</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🌧️ Rainfall</h4>
+                    <p>Precipitation (mm) - reduces fire risk by increasing moisture</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔥 FFMC Index</h4>
+                    <p>Fine Fuel Moisture Code - surface litter moisture</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📊 DMC Index</h4>
+                    <p>Duff Moisture Code - organic layer moisture</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="text-align: center; margin: 60px 0;">
+            <h2 style="margin-bottom: 20px;">Ready to Predict Fire Risk?</h2>
+            <a href="{{ url_for('predict_datapoint') if url_for else '/predict' }}" class="cta-button">🚀 Start Prediction</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 FWI Prediction System | Advanced Fire Weather Index Forecasting</p>
+        <p>Powered by Machine Learning | Built with Lasso Regression</p>
+    </footer>
+</body>
+</html>
